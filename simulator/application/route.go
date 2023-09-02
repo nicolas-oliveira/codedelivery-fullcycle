@@ -10,14 +10,14 @@ import (
 )
 
 type Route struct {
-	ID        string
-	ClientID  string
-	Positions []Position
+	ID        string     `json:"routeId"`
+	ClientID  string     `json:"clientId"`
+	Positions []Position `json:"position"`
 }
 
 type Position struct {
-	Lat  float64
-	Long float64
+	Lat  float64 `json:"lat"`
+	Long float64 `json:"long"`
 }
 
 type PartialRoutePosition struct {
@@ -31,7 +31,7 @@ func (r *Route) LoadPositions() error {
 	if r.ID == "" {
 		return errors.New("route id not informed")
 	}
-	file, err := os.Open("/destinations/" + r.ID + ".txt")
+	file, err := os.Open("destinations/" + r.ID + ".txt")
 	if err != nil {
 		return err
 	}
@@ -46,12 +46,12 @@ func (r *Route) LoadPositions() error {
 		if err != nil {
 			return err
 		}
-		
+
 		long, err := strconv.ParseFloat(data[0], 64)
 		if err != nil {
 			return err
 		}
-		
+
 		r.Positions = append(r.Positions, Position{
 			Lat:  lat,
 			Long: long,
@@ -65,22 +65,23 @@ func (r *Route) ExportJsonPositions() ([]string, error) {
 	var result []string
 
 	total := len(r.Positions)
-	
-	for k, v := range r.Positions {
+
+	for key, value := range r.Positions {
 		route.ID = r.ID
 		route.ClientID = r.ClientID
-		route.Position = []float64{v.Lat, v.Long}
+		route.Position = []float64{value.Lat, value.Long}
 		route.Finished = false
-		
-		if total-1 == k {
+
+		if total-1 == key {
 			route.Finished = true
 		}
-		
+
+		// Converte a rota que está em stream de bits para json
 		jsonRoute, err := json.Marshal(route)
 		if err != nil {
 			return nil, err
 		}
-		
+
 		result = append(result, string(jsonRoute))
 	}
 	return result, nil
